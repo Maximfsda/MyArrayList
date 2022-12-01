@@ -1,82 +1,161 @@
 package com.example.myarraylist;
 
-public class MyArrayList {
-    public interface StringList {
+import java.util.Arrays;
 
-        // Добавление элемента.
-        // Вернуть добавленный элемент
-        // в качестве результата выполнения.
-        String add(String item);
+public class MyArrayList implements StringList {
 
-        // Добавление элемента
-        // на определенную позицию списка.
-        // Если выходит за пределы фактического
-        // количества элементов или массива,
-        // выбросить исключение.
-        // Вернуть добавленный элемент
-        // в качестве результата выполнения.
-        String add(int index, String item);
+    private String[] data;
+    private int size = 0;
 
-        // Установить элемент
-        // на определенную позицию,
-        // затерев существующий.
-        // Выбросить исключение,
-        // если индекс больше
-        // фактического количества элементов
-        // или выходит за пределы массива.
-        String set(int index, String item);
-
-        // Удаление элемента.
-        // Вернуть удаленный элемент
-        // или исключение, если подобный
-        // элемент отсутствует в списке.
-        String remove(String item);
-
-        // Удаление элемента по индексу.
-        // Вернуть удаленный элемент
-        // или исключение, если подобный
-        // элемент отсутствует в списке.
-        String remove(int index);
-
-        // Проверка на существование элемента.
-        // Вернуть true/false;
-        boolean contains(String item);
-
-        // Поиск элемента.
-        // Вернуть индекс элемента
-        // или -1 в случае отсутствия.
-        int indexOf(String item);
-
-        // Поиск элемента с конца.
-        // Вернуть индекс элемента
-        // или -1 в случае отсутствия.
-        int lastIndexOf(String item);
-
-        // Получить элемент по индексу.
-        // Вернуть элемент или исключение,
-        // если выходит за рамки фактического
-        // количества элементов.
-        String get(int index);
-
-        // Сравнить текущий список с другим.
-        // Вернуть true/false или исключение,
-        // если передан null.
-        boolean equals(StringList otherList);
-
-        // Вернуть фактическое количество элементов.
-        int size();
-
-        // Вернуть true,
-        // если элементов в списке нет,
-        // иначе false.
-        boolean isEmpty();
-
-        // Удалить все элементы из списка.
-        void clear();
-
-        // Создать новый массив
-        // из строк в списке
-        // и вернуть его.
-        String[] toArray();
+    public MyArrayList() {
+        this.data = new String[]{};
     }
+
+    @Override
+    public String add(String item) {
+        return add(size, item);
+    }
+
+    @Override
+    public String add(int index, String item) {
+        checkItem(item);
+
+        if (index < 0 || index > size) {
+            throw new IllegalArgumentException("Wrong index");
+        }
+
+        if (size + 1 > data.length) {
+            grow();
+        }
+        System.arraycopy(this.data, index, this.data, index + 1, size - index);
+        this.data[index] = item;
+
+        this.size++;
+        return item;
+    }
+
+    @Override
+    public String set(int index, String item) {
+        checkItem(item);
+        checkIndex(index);
+        this.data[index] = item;
+        return item;
+    }
+
+    @Override
+    public String remove(String item) {
+        int elementIndex = indexOf(item);
+        if (elementIndex == -1) {
+            throw new IllegalArgumentException("Failed to find the elements to remove ");
+        }
+        return remove(elementIndex);
+    }
+
+    @Override
+    public String remove(int index) {
+        checkIndex(index);
+        String elem = this.data[index];
+        this.data[index] = null;
+        if(index <size - 1){
+            System.arraycopy(this.data,index +1,this.data,index,size - index - 1);
+        }
+        size--;
+        this.data[index] = null;
+        return elem;
+    }
+
+    @Override
+    public boolean contains(String item) {
+        return indexOf(item) != -1;
+    }
+
+    @Override
+    public int indexOf(String item) {
+        checkItem(item);
+        for (int i = 0; i < this.size; i++) {
+            if (this.data[i].equals(item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(String item) {
+        checkItem(item);
+        for (int i = size - 1; i >= 0; i--) {
+            if (item.equals(this.data[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public String get(int index) {
+        checkIndex(index);
+        return this.data[index];
+    }
+
+    @Override
+    public boolean equals(MyArrayList otherList) {
+        if (otherList == null) {
+            return false;
+        }
+        MyArrayList otherMyArrayList = (MyArrayList) otherList;
+        if (otherMyArrayList.size != this.size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (!this.data[i].equals(otherMyArrayList.data[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int size() {
+        return this.size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public void clear() {
+        for (int i = 0; i < size; i++) {
+            this.data[i] = null;
+        }
+        this.size = 0;
+    }
+
+    @Override
+    public String[] toArray() {
+        String [] strings = new String[size];
+        System.arraycopy(this.data,0,strings,0,size);
+        return strings;
+    }
+
+    private void checkIndex(int index) {
+        if (index < 0 || index >= size) {
+            throw new IllegalArgumentException("Wrong index");
+        }
+    }
+
+    private void checkItem(String item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Value in list cannot be null");
+        }
+    }
+
+    private void grow() {
+        this.data = Arrays.copyOf(this.data, this.data.length + 1);
+    }
+
+    public class StringList {
+    }
+
 }
